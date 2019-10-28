@@ -54,7 +54,7 @@ public class SATSolverTest {
 
         System.out.println("SAT parser starts!!!");
         long startedParser = System.nanoTime();
-        Formula currentFormula = parseFormula("2D/src/main/java/sampleCNF/unsat2.cnf");
+        Formula currentFormula = parseFormula("/Volumes/Media/Dls/2D_combined.cnf");
         long timeParser = System.nanoTime();
         long timeTakenParser = timeParser - startedParser;
         System.out.println("Time:" + timeTakenParser / 1000000.0 + "ms");
