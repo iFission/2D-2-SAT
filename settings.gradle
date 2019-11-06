@@ -1,2 +1,0 @@
-include ':app', ':2D'
-rootProject.name='CEC-SAT'
