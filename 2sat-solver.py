@@ -243,7 +243,7 @@ def build_formula_list(max_length):
     return formula_list
 
 
-formula_list = build_formula_list(10000000)
+formula_list = build_formula_list(1000000)
 
 import numpy as np
 import matplotlib.pyplot as plt
