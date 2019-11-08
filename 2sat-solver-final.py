@@ -140,6 +140,13 @@ def kosaraju_contradictory_ssc(graph, graph_rev):
     return contradictory_ssc
 
 def dfs(filename):
+    f = open(filename,"r")
+
+    # # Their parser
+    # n = f.readline()
+    # formula = [[int(x) for x in line.split()] for line in f]
+
+    # Our parser
     f = open(filename)
     formula = []
     for line in f:
@@ -155,14 +162,16 @@ def dfs(filename):
                 if int(x) != 0:
                     templit.append(int(x))
             formula.append(templit)
+
+    print("DFS formula",formula)
     sat_graph = make_sat_graph(formula)
     graph, graph_rev = readDirectedGraph(sat_graph)
     start = time()
     contradictory_ssc = kosaraju_contradictory_ssc(graph, graph_rev)
-    print(sorted_by_finish_time) 
-    print(explored)
+    #print(sorted_by_finish_time) 
+    #print(explored)
     res = 'FORMULA UNSATISFIABLE' if contradictory_ssc else 'FORMULA SATISFIABLE'
-    print(res)
+    #print(res)
     time_taken = time() - start
 
     return time_taken
@@ -180,7 +189,7 @@ def random_solve(file):
     file = open(file, "r")
     #noOfClauses = int( file.readline() )
 
-    clauses = []
+    clauses_random = []
     for line in file:
         if line[0] == "c":
             pass
@@ -191,13 +200,15 @@ def random_solve(file):
         else:
             clauseLiteralsInfo=line.split()
             clause = Clause( firstLiteral = int(clauseLiteralsInfo[0]), secondLiteral = int(clauseLiteralsInfo[1]))
-            clauses.append(clause)
+            # print(clause)
+            clauses_random.append(clause)
     # print(noOfClauses)
+    # print("random clauses",clauses_random)
 
     start = time()
 
     # Calling papadimitriou's algorithm
-    papadimitriou(clauses, noOfClauses,numlit)
+    papadimitriou(clauses_random, noOfClauses,numlit)
     return time() - start
 
 def papadimitriou(clauses, noOfClauses,numlit):
@@ -262,8 +273,14 @@ def papadimitriou(clauses, noOfClauses,numlit):
         if isSatisfying == True:
             #Printing results
             print("The answers of the literals respectively are as follows :- \n\n")
+            outstr=""
             for i in range(1, numlit+1):
-                print("Literal " + str(i) + " : " + str(answers[i]) )
+                if answers[i]==False:
+                    outstr+="0 "
+                else:
+                    outstr+="1 "
+                #print("Literal " + str(i) + " : " + str(answers[i]) )
+            print(outstr)
             print("FORMULA SATISFIABLE")
             break
 
@@ -306,33 +323,8 @@ class Clause:
 
 # In[50]:
 
+# Input CNF filename
+filename=input("Please input the name of the .CNF file")
+# dfs(filename)
+random_solve(filename)
 
-# parse formula
-
-# random_solve('2sat1.txt')
-# f = open('2sat1.txt')
-# clau = []
-# for line in f:
-#     if line[0] == "c":
-#         pass
-#     elif line[0] == "p":
-#         x = line.split()
-#         numlit = x[2]
-#         clauselit = x[3]
-#     else:
-#         templit = []
-#         for x in line.split():
-#             if int(x) != 0:
-#                 templit.append(int(x))
-#         clau.append(templit)
-# print(clau)
-
-dfs('2sat1.txt')
-
-# g = open('2sat.txt')
-# #n= int(f.readline())
-# formula = [[int(x) for x in line.split()] for line in g]
-# print(formula)
-# dfs(formula)
-
-# %%
