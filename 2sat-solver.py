@@ -1,37 +1,28 @@
 #!/usr/bin/env python
-# coding: utf-8
-
-# In[48]:
-
 
 import math
 import random
-import gc
 import sys
-import threading
 from io import StringIO
 from time import time
 from tqdm import tqdm
 
-## Making the implication graph
+
 def make_sat_graph(clauses):
     n = len(clauses)
+
     def var_index(var):
         if var < 0: return n - var
         else: return var
+
     res = ''
     for clause in clauses:
         res += '%i %i\n' % (var_index(-clause[0]), var_index(clause[1]))
         res += '%i %i\n' % (var_index(-clause[1]), var_index(clause[0]))
-    #print(res)
     return res
 
 
-################################################################################
-#######      Kosaraju's SSC algorithm implementation from part 1          ######
-################################################################################
-
-def readDirectedGraph(str):
+def read_directed_graph(str):
     f = StringIO(str)
 
     adjlist = []
@@ -49,12 +40,11 @@ def readDirectedGraph(str):
         while len(adjlist_reversed) < max_v:
             adjlist_reversed.append([])
 
-        adjlist[v_from-1].append(v_to-1)
-        adjlist_reversed[v_to-1].append(v_from-1)
+        adjlist[v_from - 1].append(v_to - 1)
+        adjlist_reversed[v_to - 1].append(v_from - 1)
 
         line = f.readline()
 
-    #print(adjlist)
     return adjlist, adjlist_reversed
 
 
@@ -67,19 +57,20 @@ current_ssc = None
 contradictory_ssc = None
 sorted_by_finish_time = None
 
-def DFS_Loop_1(graph_rev, n):
+
+def dfs_loop_1(graph_rev, n):
 
     global t, explored, sorted_by_finish_time
     t = 0
-    explored = [False]*n
-    sorted_by_finish_time = [None]*n
+    explored = [False] * n
+    sorted_by_finish_time = [None] * n
 
     for i in reversed(range(n)):
         if not explored[i]:
-            DFS_1(graph_rev, i)
+            dfs_1(graph_rev, i)
 
 
-def DFS_1(graph_rev, i):
+def dfs_1(graph_rev, i):
 
     global t, explored
 
@@ -87,33 +78,29 @@ def DFS_1(graph_rev, i):
 
     for v in graph_rev[i]:
         if not explored[v]:
-            DFS_1(graph_rev, v)
+            dfs_1(graph_rev, v)
 
     sorted_by_finish_time[t] = i
     t += 1
 
 
-def DFS_Loop_2(graph):
+def dfs_loop_2(graph):
 
     global current_ssc, explored, contradictory_ssc, sorted_by_finish_time
 
-    explored = [False]*len(graph)
+    explored = [False] * len(graph)
 
     for i in reversed(range(len(graph))):
         if not explored[sorted_by_finish_time[i]]:
             scc_size = 0
-            # Here we collect all the members
-            # of the next SCC using DFS.
             current_ssc = set()
             contradictory_ssc = False
-            DFS_2(graph, sorted_by_finish_time[i])
+            dfs_2(graph, sorted_by_finish_time[i])
             if contradictory_ssc: break
-    #print("current_ssc",current_ssc)
-    #print("sorted by finish time:",sorted_by_finish_time)
     return contradictory_ssc
 
 
-def DFS_2(graph, i):
+def dfs_2(graph, i):
 
     global explored, current_ssc, contradictory_ssc
 
@@ -122,31 +109,27 @@ def DFS_2(graph, i):
 
     # Check for unsatisfabilty indicator
     if i < n:
-        if (i+n) in current_ssc:
+        if (i + n) in current_ssc:
             contradictory_ssc = True
-    elif (i-n) in current_ssc:
+    elif (i - n) in current_ssc:
         contradictory_ssc = True
 
     for v in graph[i]:
         if not explored[v]:
-            DFS_2(graph, v)
+            dfs_2(graph, v)
 
 
 def kosaraju_contradictory_ssc(graph, graph_rev):
     #print("this is the graph",graph)
-    DFS_Loop_1(graph_rev, len(graph))
-    contradictory_ssc = DFS_Loop_2(graph)
+    dfs_loop_1(graph_rev, len(graph))
+    contradictory_ssc = dfs_loop_2(graph)
 
     return contradictory_ssc
 
+
 def dfs(filename):
-    f = open(filename,"r")
+    f = open(filename, "r")
 
-    # # Their parser
-    # n = f.readline()
-    # formula = [[int(x) for x in line.split()] for line in f]
-
-    # Our parser
     f = open(filename)
     formula = []
     for line in f:
@@ -154,8 +137,6 @@ def dfs(filename):
             pass
         elif line[0] == "p":
             x = line.split()
-            #numlit = x[2]
-            #clauselit = x[3]
         else:
             templit = []
             for x in line.split():
@@ -163,31 +144,20 @@ def dfs(filename):
                     templit.append(int(x))
             formula.append(templit)
 
-    print("DFS formula",formula)
     sat_graph = make_sat_graph(formula)
-    graph, graph_rev = readDirectedGraph(sat_graph)
-    start = time()
+    graph, graph_rev = read_directed_graph(sat_graph)
     contradictory_ssc = kosaraju_contradictory_ssc(graph, graph_rev)
-    #print(sorted_by_finish_time) 
-    #print(explored)
-    res = 'FORMULA UNSATISFIABLE' if contradictory_ssc else 'FORMULA SATISFIABLE'
-    #print(res)
-    time_taken = time() - start
-
-    return time_taken
-
-
-# In[64]:
+    solution = 'FORMULA UNSATISFIABLE' if contradictory_ssc else 'FORMULA SATISFIABLE'
+    return solution
 
 
 import random
 import math
 
+
 def random_solve(file):
 
-    # Reading inputs from the input file and storing clauses in a list
     file = open(file, "r")
-    #noOfClauses = int( file.readline() )
 
     clauses_random = []
     for line in file:
@@ -196,135 +166,100 @@ def random_solve(file):
         elif line[0] == "p":
             x = line.split()
             numlit = int(x[2])
-            noOfClauses = int(x[3])
+            no_clauses = int(x[3])
         else:
-            clauseLiteralsInfo=line.split()
-            clause = Clause( firstLiteral = int(clauseLiteralsInfo[0]), secondLiteral = int(clauseLiteralsInfo[1]))
-            # print(clause)
+            clauseLiteralsInfo = line.split()
+            clause = Clause(literal_1=int(clauseLiteralsInfo[0]),
+                            literal_2=int(clauseLiteralsInfo[1]))
             clauses_random.append(clause)
-    # print(noOfClauses)
-    # print("random clauses",clauses_random)
+    papadimitriou(clauses_random, no_clauses, numlit)
 
-    start = time()
 
-    # Calling papadimitriou's algorithm
-    papadimitriou(clauses_random, noOfClauses,numlit)
-    return time() - start
-
-def papadimitriou(clauses, noOfClauses,numlit):
+def papadimitriou(clauses, no_clauses, numlit):
     """Funtion to compute where or not a instance satisfies the 2-SAT property.
        Inputs are the clauses and number of clauses."""
-    # List to store the values of the literals initialized above
     answers = []
-    answers.append( "NaN" )
-    for x in range(1, noOfClauses+1):
+    answers.append("NaN")
+    for x in range(1, no_clauses + 1):
         x = random.random()
         if x > 0.5:
             answers.append(True)
         else:
             answers.append(False)
 
-    # Algorithm to run 2 * n^2 * logn times (loops)
-    twoNSquared = 2 * (noOfClauses ** 2)
+    is_satisfying = False
 
-    # Flag to keep track if the input satisfies 2-SAT propety or not
-    isSatisfying = False
+    for k in range(int(math.log(no_clauses, 2))):
+        for j in range(2 * (no_clauses**2)):
 
-    # Running for loop of algorithm
-    for k in range( int( math.log(noOfClauses, 2) ) ):
+            all_claused_satisfied = True
 
-#         print("ON LOOP NUMBER :" + str(k))
+            no_satisfying_clauses = 0
 
-        for j in range(twoNSquared):
-
-            # Flag to keep track if all the clauses are satisfied or not
-            # Helps in breaking early
-            areAllClausesSatisfied = True
-
-            # Variable to keep track of number of clauses satisfied till now
-            # (of the clauses scanned)
-            noOfSatisfyingClauses = 0
-
-            # Running loop for every clause
             for clause in clauses:
 
-                # If clause is not satisfying itself individually
-                if clause.isSatisfyingCriteria(answers) == False:
-                    areAllClausesSatisfied = False
+                if clause.is_satisfying(answers) == False:
+                    all_claused_satisfied = False
 
-                    # Randomly choosing a literal and negating its value
-                    randomlyChosenLiteral = random.choices([clause.firstLiteral,clause.secondLiteral])[0]
-                    answers[ abs(randomlyChosenLiteral) ] = not( answers[ abs(randomlyChosenLiteral) ] )
+                    randomlyChosenLiteral = random.choices(
+                        [clause.literal_1, clause.literal_2])[0]
+                    answers[abs(randomlyChosenLiteral)] = not (
+                        answers[abs(randomlyChosenLiteral)])
 
                     break
 
-                # Else if the clause is satisfying itself individually
                 else:
-                    noOfSatisfyingClauses += 1
+                    no_satisfying_clauses += 1
 
-#             print("The number of clauses satisfying criteria till now (of the ones which have been checked in a linear pass) is :" + str(noOfSatisfyingClauses) )
-
-            # Breaking early if all the clauses are satisfied
-            if areAllClausesSatisfied == True:
-                isSatisfying = True
+            if all_claused_satisfied == True:
+                is_satisfying = True
                 break
 
-        #Printing answers, values of the literals if 2-SAT property is satisfied by clauses
-        if isSatisfying == True:
-            #Printing results
-            print("The answers of the literals respectively are as follows :- \n\n")
-            outstr=""
-            for i in range(1, numlit+1):
-                if answers[i]==False:
-                    outstr+="0 "
-                else:
-                    outstr+="1 "
-                #print("Literal " + str(i) + " : " + str(answers[i]) )
-            print(outstr)
+        if is_satisfying == True:
             print("FORMULA SATISFIABLE")
+            outstr = ""
+            for i in range(1, numlit + 1):
+                if answers[i] == False:
+                    outstr += "0 "
+                else:
+                    outstr += "1 "
+            print(outstr)
             break
 
-    #Printing not satisfiable if none of the iterations are able to find any solution
-    if isSatisfying == False:
+    if is_satisfying == False:
         print("FORULA UNSATISFIABLE")
 
+
 class Clause:
-
-    def __init__(self, firstLiteral, secondLiteral):
-        """Function to initialize a new clause."""
-
-        self.firstLiteral = firstLiteral
-        self.secondLiteral = secondLiteral
+    def __init__(self, literal_1, literal_2):
+        self.literal_1 = literal_1
+        self.literal_2 = literal_2
 
     def __str__(self):
-        """Function to print the clause in the required way."""
+        return str(self.literal_1) + " OR " + str(self.literal_2)
 
-        return str(self.firstLiteral) + " OR " + str(self.secondLiteral)
-
-    def isSatisfyingCriteria(self, answers):
-        """Function to check whether the clause is satisfied or not."""
-
-        # Negative value means negation
-        # Positive value means no negation
-
-        if self.firstLiteral < 0:
-            boolean1 = not( answers[ abs(self.firstLiteral) ] )
+    def is_satisfying(self, answers):
+        if self.literal_1 < 0:
+            boolean_1 = not (answers[abs(self.literal_1)])
         else:
-            boolean1 = answers[ self.firstLiteral ]
+            boolean_1 = answers[self.literal_1]
 
-        if self.secondLiteral < 0:
-            boolean2 = not( answers[ abs(self.secondLiteral) ] )
+        if self.literal_2 < 0:
+            boolean_2 = not (answers[abs(self.literal_2)])
         else:
-            boolean2 = answers[ self.secondLiteral ]
+            boolean_2 = answers[self.literal_2]
 
-        # Returning OR result of both the literals
-        return boolean1 or boolean2
+        return boolean_1 or boolean_2
 
 
-# In[50]:
-
-# Input CNF filename
-filename=input("Please input the name of the .CNF file")
-# dfs(filename)
-random_solve(filename)
-
+if __name__ == "__main__":
+    # Input CNF filename from terminal argument
+    try:
+        filename = sys.argv[1]
+        dfs(filename)
+        random_solve(filename)
+    except IndexError as e:
+        print("no cnf file specified")
+        print("Input cnf file as the second argument")
+        print("example:")
+        print("python3 2sat-solver.py 2sat.txt")
